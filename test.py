@@ -40,7 +40,7 @@ spacing = 1.1
 half = 0.45
 
 FColor = {'+x':'red', '-x':'orange', '+y':'blue', '-y':'green', '+z':'white', '-z':'yellow'}
-
+point={}
 def face(axis, sign, cx, cy, cz):
     if axis == 'x':
         fx_val = cx + half if sign == 1 else cx - half
@@ -77,6 +77,16 @@ for x in [-1, 0, 1]:
                 fp = face(axis, sign, cx, cy, cz)
                 poly = Poly3DCollection([fp], facecolor=FColor[direction], edgecolor='black', linewidth=0.5)
                 ax.add_collection3d(poly)
+                point[poly]=((x,y,z),direction,)
 
 ax.set_box_aspect([1,1,1])
+def callback_func(event):
+    return f{point[event.artist]}
+    
+    
+
+fig.canvas.mpl_connect('pick_event',callback_func)
+
 plt.show()
+
+
