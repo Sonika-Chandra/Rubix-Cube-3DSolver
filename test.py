@@ -81,7 +81,7 @@ for x in [-1, 0, 1]:
 
 ax.set_box_aspect([1,1,1])
 def callback_func(event):
-    return f{point[event.artist]}
+    print(point[event.artist])
     
     
 
