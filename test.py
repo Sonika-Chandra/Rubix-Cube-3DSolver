@@ -80,12 +80,23 @@ for x in [-1, 0, 1]:
                 point[poly]=((x,y,z),direction,)
 
 ax.set_box_aspect([1,1,1])
+
+press_pos = None
 def callback_func(event):
+    global press_pos 
+    press_pos=(event.mouseevent.x, event.mouseevent.y)
+    print("pressed at:", press_pos)
     print(point[event.artist])
     
-    
+def on_release(event):
+    global press_pos
+    if press_pos is None:
+        return                 # no face was picked before this release, ignore it
+    release_pos = (event.x, event.y)
+    print("released at:", release_pos)
 
-fig.canvas.mpl_connect('pick_event',callback_func)
+fig.canvas.mpl_connect('pick_event', on_pick)
+fig.canvas.mpl_connect('button_release_event', on_release)
 
 plt.show()
 
