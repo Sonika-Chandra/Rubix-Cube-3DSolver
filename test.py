@@ -82,7 +82,7 @@ for x in [-1, 0, 1]:
 ax.set_box_aspect([1,1,1])
 
 press_pos = None
-def callback_func(event):
+def on_pick(event):
     global press_pos 
     press_pos=(event.mouseevent.x, event.mouseevent.y)
     print("pressed at:", press_pos)
