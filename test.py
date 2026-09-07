@@ -82,22 +82,27 @@ for x in [-1, 0, 1]:
 ax.set_box_aspect([1,1,1])
 
 press_pos = None
+press_poly = None
+
 def on_pick(event):
-    global press_pos 
-    press_pos=(event.mouseevent.x, event.mouseevent.y)
-    print("pressed at:", press_pos)
+    global press_pos, press_poly
+    press_pos = (event.mouseevent.x, event.mouseevent.y)
+    press_poly = event.artist
+    press_poly.set_edgecolor('cyan')
+    fig.canvas.draw_idle()
     print(point[event.artist])
-    
+
 def on_release(event):
-    global press_pos
-    if press_pos is None:
-        return                 # no face was picked before this release, ignore it
+    global press_pos, press_poly
+    if press_pos is None or press_poly is None:
+        return
     release_pos = (event.x, event.y)
+    press_poly.set_edgecolor('black')
+    fig.canvas.draw_idle()
     print("released at:", release_pos)
 
 fig.canvas.mpl_connect('pick_event', on_pick)
 fig.canvas.mpl_connect('button_release_event', on_release)
-
 plt.show()
 
 
