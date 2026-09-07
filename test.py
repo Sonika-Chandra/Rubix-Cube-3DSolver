@@ -83,7 +83,16 @@ ax.set_box_aspect([1,1,1])
 
 press_pos = None
 press_poly = None
+axis_index = {'x': 0, 'y': 1, 'z': 2}
 
+def get_layer(axis, value):
+    idx = axis_index[axis]
+    layer_polys = []
+    for poly, (pos, direction) in point.items():
+        if pos[idx] == value:
+            layer_polys.append(poly)
+    return layer_polys
+    
 def on_pick(event):
     global press_pos, press_poly
     press_pos = (event.mouseevent.x, event.mouseevent.y)
@@ -100,7 +109,7 @@ def on_release(event):
     press_poly.set_edgecolor('black')
     fig.canvas.draw_idle()
     print("released at:", release_pos)
-
+print(len(get_layer('x', 1)))
 fig.canvas.mpl_connect('pick_event', on_pick)
 fig.canvas.mpl_connect('button_release_event', on_release)
 plt.show()
