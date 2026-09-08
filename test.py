@@ -106,9 +106,16 @@ def on_release(event):
     if press_pos is None or press_poly is None:
         return
     release_pos = (event.x, event.y)
-    press_poly.set_edgecolor('black')
+    pos, direction = point[press_poly]
+    axis = direction[1]
+    value = pos[axis_index[axis]]
+    layer = get_layer(axis, value)
+    for poly in layer:
+        poly.set_edgecolor('cyan')
     fig.canvas.draw_idle()
-    print("released at:", release_pos)
+    press_pos = None
+    press_poly = None
+
 print(len(get_layer('x', 1)))
 fig.canvas.mpl_connect('pick_event', on_pick)
 fig.canvas.mpl_connect('button_release_event', on_release)
