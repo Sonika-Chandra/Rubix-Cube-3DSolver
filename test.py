@@ -83,6 +83,7 @@ ax.set_box_aspect([1,1,1])
 
 press_pos = None
 press_poly = None
+current_layer = None  
 axis_index = {'x': 0, 'y': 1, 'z': 2}
 
 def get_layer(axis, value):
@@ -92,27 +93,37 @@ def get_layer(axis, value):
         if pos[idx] == value:
             layer_polys.append(poly)
     return layer_polys
-    
+
 def on_pick(event):
     global press_pos, press_poly
     press_pos = (event.mouseevent.x, event.mouseevent.y)
     press_poly = event.artist
     press_poly.set_edgecolor('cyan')
     fig.canvas.draw_idle()
-    print(point[event.artist])
 
 def on_release(event):
-    global press_pos, press_poly
+    global press_pos, press_poly, current_layer
     if press_pos is None or press_poly is None:
         return
     release_pos = (event.x, event.y)
+
     pos, direction = point[press_poly]
     axis = direction[1]
     value = pos[axis_index[axis]]
+
+    # revert the PREVIOUSLY highlighted layer, if one exists
+    if current_layer is not None:
+        for poly in current_layer:
+            poly.set_edgecolor('black')
+
+    # highlight the NEW layer
     layer = get_layer(axis, value)
     for poly in layer:
         poly.set_edgecolor('cyan')
     fig.canvas.draw_idle()
+
+    current_layer = layer  # remember this layer for next time
+
     press_pos = None
     press_poly = None
 
