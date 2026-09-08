@@ -127,6 +127,16 @@ def on_release(event):
     press_pos = None
     press_poly = None
 
+def rotate_position(pos,axis,clockwise):
+    x, y, z = pos
+    if axis == 'z':
+        if clockwise:
+            new_x, new_y = y, -x
+        else:
+            new_x, new_y = -y, x
+        return (new_x, new_y, z)
+
+
 print(len(get_layer('x', 1)))
 fig.canvas.mpl_connect('pick_event', on_pick)
 fig.canvas.mpl_connect('button_release_event', on_release)
