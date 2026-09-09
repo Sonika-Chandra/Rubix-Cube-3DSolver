@@ -142,7 +142,8 @@ def rotate_position(pos,axis,clockwise):
             new_y, new_z = z, -y
         return (x, new_y, new_z)
 
-
+print(rotate_position((1, 1, 1), 'x', True))
+print(rotate_position((1, 1, 1), 'x', False))
 print(len(get_layer('x', 1)))
 fig.canvas.mpl_connect('pick_event', on_pick)
 fig.canvas.mpl_connect('button_release_event', on_release)
