@@ -75,7 +75,7 @@ for x in [-1, 0, 1]:
             for axis, sign in faces_to_draw:
                 direction = ('+' if sign == 1 else '-') + axis
                 fp = face(axis, sign, cx, cy, cz)
-                poly = Poly3DCollection([fp], facecolor=FColor[direction], edgecolor='black', linewidth=0.5)
+                poly = Poly3DCollection([fp], facecolor=FColor[direction], edgecolor='black', linewidth=4,picker=True)
                 ax.add_collection3d(poly)
                 point[poly]=((x,y,z),direction,)
 
