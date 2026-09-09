@@ -135,6 +135,12 @@ def rotate_position(pos,axis,clockwise):
         else:
             new_x, new_y = -y, x
         return (new_x, new_y, z)
+    if axis == 'x':
+        if clockwise:
+            new_y, new_z = -z, y
+        else:
+            new_y, new_z = z, -y
+        return (x, new_y, new_z)
 
 
 print(len(get_layer('x', 1)))
