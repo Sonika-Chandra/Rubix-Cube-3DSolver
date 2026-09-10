@@ -85,7 +85,8 @@ press_pos = None
 press_poly = None
 current_layer = None  
 axis_index = {'x': 0, 'y': 1, 'z': 2}
-
+dir_vecs = {'+x':(1,0,0), '-x':(-1,0,0), '+y':(0,1,0), '-y':(0,-1,0), '+z':(0,0,1), '-z':(0,0,-1)}
+vec_to_dir = {v: k for k, v in dir_vecs.items()}
 def get_layer(axis, value):
     idx = axis_index[axis]
     layer_polys = []
@@ -108,44 +109,78 @@ def on_release(event):
     release_pos = (event.x, event.y)
 
     pos, direction = point[press_poly]
-    axis = direction[1]
-    value = pos[axis_index[axis]]
+    face_axis = direction[1]
+    value = pos[axis_index[face_axis]]
 
-    # revert the PREVIOUSLY highlighted layer, if one exists
+    dx = release_pos[0] - press_pos[0]
+    dy = release_pos[1] - press_pos[1]
+
+    # revert old highlight regardless
     if current_layer is not None:
         for poly in current_layer:
             poly.set_edgecolor('black')
 
-    # highlight the NEW layer
-    layer = get_layer(axis, value)
-    for poly in layer:
-        poly.set_edgecolor('cyan')
+    if abs(dx) < 5 and abs(dy) < 5:
+        # too small to count as a drag - just deselect
+        press_poly.set_edgecolor('black')
+        fig.canvas.draw_idle()
+        current_layer = None
+        press_pos = None
+        press_poly = None
+        return
+
+    # rotation axis = the clicked face's own axis (simplification)
+    axis = face_axis
+    clockwise = dx > 0 if abs(dx) > abs(dy) else dy < 0
+
+    layer_polys = get_layer(axis, value)
+    old_data = [(p, point[p][0], point[p][1], p.get_facecolor()) for p in layer_polys]
+
+    for p in layer_polys:
+        p.remove()
+        del point[p]
+
+    new_layer = []
+    for poly, old_pos, old_dir, color in old_data:
+        new_pos = rotate_position(old_pos, axis, clockwise)
+        new_dvec = rotate_position(dir_vecs[old_dir], axis, clockwise)
+        new_dir = vec_to_dir[new_dvec]
+
+        ncx, ncy, ncz = new_pos[0]*spacing, new_pos[1]*spacing, new_pos[2]*spacing
+        sign = 1 if new_dir[0] == '+' else -1
+        fp = face(new_dir[1], sign, ncx, ncy, ncz)
+
+        newpoly = Poly3DCollection([fp], facecolor=color, edgecolor='black', linewidth=0.5, picker=True)
+        ax.add_collection3d(newpoly)
+        point[newpoly] = (new_pos, new_dir)
+        new_layer.append(newpoly)
+
     fig.canvas.draw_idle()
-
-    current_layer = layer  # remember this layer for next time
-
+    current_layer = new_layer
     press_pos = None
     press_poly = None
 
-def rotate_position(pos,axis,clockwise):
+def rotate_position(pos, axis, clockwise):
     x, y, z = pos
+    if axis == 'x':
+        if clockwise:
+            new_y, new_z = z, -y
+        else:
+            new_y, new_z = -z, y
+        return (x, new_y, new_z)
+    if axis == 'y':
+        if clockwise:
+            new_z, new_x = x, -z
+        else:
+            new_z, new_x = -x, z
+        return (new_x, y, new_z)
     if axis == 'z':
         if clockwise:
             new_x, new_y = y, -x
         else:
             new_x, new_y = -y, x
         return (new_x, new_y, z)
-    if axis == 'x':
-        if clockwise:
-            new_y, new_z = -z, y
-        else:
-            new_y, new_z = z, -y
-        return (x, new_y, new_z)
 
-print(rotate_position((1, 1, 1), 'x', True))
-print(rotate_position((1, 1, 1), 'x', False))
-print(rotate_position((1, 1, -1), 'x', True))
-print(len(get_layer('x', 1)))
 fig.canvas.mpl_connect('pick_event', on_pick)
 fig.canvas.mpl_connect('button_release_event', on_release)
 plt.show()
