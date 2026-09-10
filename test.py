@@ -101,7 +101,22 @@ def on_pick(event):
     press_poly = event.artist
     press_poly.set_edgecolor('cyan')
     fig.canvas.draw_idle()
+def on_key(event):
+    step = 5
+    if event.key == 'left':
+        ax.azim -= step
+    elif event.key == 'right':
+        ax.azim += step
+    elif event.key == 'up':
+        ax.elev += step
+    elif event.key == 'down':
+        ax.elev -= step
+    else:
+        return
+    ax.view_init(elev=ax.elev, azim=ax.azim)
+    fig.canvas.draw_idle()
 
+fig.canvas.mpl_connect('key_press_event', on_key)
 def on_release(event):
     global press_pos, press_poly, current_layer
     if press_pos is None or press_poly is None:
