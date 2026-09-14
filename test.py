@@ -1,5 +1,6 @@
 """import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from mpl_toolkits.mplot3d import proj3d
 fig=plt.figure()
 ax=fig.add_subplot(111, projection='3d')
 spacing=1.1
@@ -117,6 +118,14 @@ def on_key(event):
     fig.canvas.draw_idle()
 
 fig.canvas.mpl_connect('key_press_event', on_key)
+
+def project_vector(vec):
+    origin_2d = proj3d.proj_transform(0, 0, 0, ax.get_proj())
+    tip_2d = proj3d.proj_transform(vec[0], vec[1], vec[2], ax.get_proj())
+    p0 = ax.transData.transform((origin_2d[0], origin_2d[1]))
+    p1 = ax.transData.transform((tip_2d[0], tip_2d[1]))
+    return (p1[0] - p0[0], p1[1] - p0[1])
+    
 def on_release(event):
     global press_pos, press_poly, current_layer
     if press_pos is None or press_poly is None:
@@ -128,15 +137,13 @@ def on_release(event):
     value = pos[axis_index[face_axis]]
 
     dx = release_pos[0] - press_pos[0]
-    dy = release_pos[1] - press_pos[1]
+    dy = -(release_pos[1] - press_pos[1])  # screen y is flipped vs data y
 
-    # revert old highlight regardless
     if current_layer is not None:
         for poly in current_layer:
             poly.set_edgecolor('black')
 
     if abs(dx) < 5 and abs(dy) < 5:
-        # too small to count as a drag - just deselect
         press_poly.set_edgecolor('black')
         fig.canvas.draw_idle()
         current_layer = None
@@ -144,9 +151,22 @@ def on_release(event):
         press_poly = None
         return
 
-    # rotation axis = the clicked face's own axis (simplification)
-    axis = face_axis
-    clockwise = dx > 0 if abs(dx) > abs(dy) else dy < 0
+    candidate_axes = [a for a in ['x', 'y', 'z'] if a != face_axis]
+    unit_vecs = {'x': (1,0,0), 'y': (0,1,0), 'z': (0,0,1)}
+
+    best_axis = None
+    best_score = -1
+    best_sign = 1
+    for a in candidate_axes:
+        px, py = project_vector(unit_vecs[a])
+        score = px*dx + py*dy
+        if abs(score) > best_score:
+            best_score = abs(score)
+            best_axis = a
+            best_sign = 1 if score > 0 else -1
+
+    axis = best_axis
+    clockwise = best_sign > 0
 
     layer_polys = get_layer(axis, value)
     old_data = [(p, point[p][0], point[p][1], p.get_facecolor()) for p in layer_polys]
@@ -174,7 +194,7 @@ def on_release(event):
     current_layer = new_layer
     press_pos = None
     press_poly = None
-
+    
 def rotate_position(pos, axis, clockwise):
     x, y, z = pos
     if axis == 'x':
