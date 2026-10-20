@@ -1,0 +1,10 @@
+{
+  "name": "trix",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Trix: a 3D Rubik's cube in the browser that can solve itself three ways, with timers",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/model.test.js tests/solvers.test.js"
+  }
+}

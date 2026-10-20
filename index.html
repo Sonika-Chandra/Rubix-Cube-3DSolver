@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trix · 3D Rubik's cube that solves itself</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- lets "import * as THREE from 'three'" find our local copy -->
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="logo">TRIX</span><span class="tagline">the cube that solves itself</span>
+      <button id="help-btn" class="pill-btn">How to play</button>
+    </div>
+    <div class="topbar-right">
+      <div class="palette" role="group" aria-label="Sticker colours">
+        <button data-palette="classic" aria-pressed="true">Classic</button>
+        <button data-palette="pastel" aria-pressed="false">Pastel</button>
+      </div>
+      <span id="solver-status" class="status-pill"><i class="dot"></i>Warming up the shortest solver…</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- ===== Panel 1: the cube ===== -->
+    <section class="panel cube-panel" aria-label="3D cube">
+      <canvas id="cube"></canvas>
+      <p class="cube-hint">Drag a sticker to turn a layer (middle rows too) · Shift+drag turns the whole cube · drag outside to look around</p>
+    </section>
+
+    <!-- ===== Panel 2: solving ===== -->
+    <section class="panel side-panel" aria-label="Solver">
+      <div class="methods" role="radiogroup" aria-label="Solving method">
+        <button class="method" data-method="shortest" role="radio" aria-checked="true">
+          <strong>Shortest</strong><span>Kociemba · ~20 moves</span>
+        </button>
+        <button class="method" data-method="cfop" role="radio" aria-checked="false">
+          <strong>CFOP</strong><span>Speedcubing · ~70</span>
+        </button>
+        <button class="method" data-method="beginner" role="radio" aria-checked="false">
+          <strong>Beginner</strong><span>Layer by layer · ~160</span>
+        </button>
+      </div>
+
+      <div class="timer-card">
+        <div id="timer-label" class="timer-label">Scramble the cube, then solve it</div>
+        <div id="timer" class="timer">00:00.00</div>
+        <div class="stats">
+          <div><span id="stat-moves">0</span><small>moves</small></div>
+          <div><span id="stat-tps">0.0</span><small>turns / s</small></div>
+          <div><span id="stat-think">–</span><small>thinking</small></div>
+        </div>
+        <div id="step-label" class="step-label">&nbsp;</div>
+
+        <!-- shown while YOU are solving a scramble -->
+        <div id="assist" class="assist" hidden>
+          <div class="assist-buttons">
+            <button id="hint-btn" class="btn small" title="Name the next step and its moves">💡 Hint</button>
+            <button id="show-btn" class="btn small" title="Play just the next step, then it's your turn again">▶ Show me</button>
+            <button id="finish-btn" class="btn small" title="Solve the rest for me (your timer keeps running)">🏁 Finish it</button>
+          </div>
+          <p id="hint-text" class="hint-text">Stuck? Help uses the method selected above.</p>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="scramble-btn" class="btn">Scramble</button>
+        <button id="solve-btn" class="btn primary">Solve ▶</button>
+        <button id="stop-btn" class="btn" disabled>Stop</button>
+        <button id="undo-btn" class="btn" title="Ctrl+Z">Undo</button>
+        <button id="reset-btn" class="btn">Reset</button>
+      </div>
+
+      <label class="speed">
+        Turn speed
+        <input id="speed" type="range" min="40" max="400" step="10" value="160">
+        <span id="speed-value">160 ms</span>
+      </label>
+
+      <div class="scroll">
+        <div id="compare" class="compare" hidden>
+          <h3>You vs the computer · same scramble</h3>
+          <table class="results">
+            <thead><tr><th>Who</th><th>Moves</th><th>Time</th><th></th></tr></thead>
+            <tbody id="compare-body"></tbody>
+          </table>
+        </div>
+
+        <h3>Solution</h3>
+        <div id="moves" class="moves"><p class="muted">The solving moves will appear here.</p></div>
+
+        <h3>Results</h3>
+        <table class="results">
+          <thead><tr><th>Who</th><th>Moves</th><th>Time</th><th>Think</th><th>Speed</th></tr></thead>
+          <tbody id="results"><tr class="empty"><td colspan="5">No solves yet</td></tr></tbody>
+        </table>
+
+        <details class="pad">
+          <summary>Move buttons</summary>
+          <div id="move-pad" class="move-pad"></div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="help-dialog" class="dialog">
+    <h2>How to play</h2>
+    <ul>
+      <li><strong>Turn a layer:</strong> drag a sticker. The layer follows your finger and snaps to the nearest quarter turn.</li>
+      <li><strong>Turn a middle layer:</strong> drag a sticker in the middle row or column, or press M, E, S (M turns like L, E like D, S like F).</li>
+      <li><strong>Turn the whole cube:</strong> hold Shift and drag, or press X, Y, Z.</li>
+      <li><strong>Look around:</strong> drag the empty space around the cube. Scroll to zoom. Arrow keys work too.</li>
+      <li><strong>Keyboard:</strong> U R F D L B turn the face that's currently up, right, front…; M E S turn the middle slices. Hold Shift to turn the other way. Ctrl+Z undoes.</li>
+      <li><strong>Race it:</strong> press Scramble. Your timer starts on your first turn and stops when the cube is solved. Then compare: see how many moves each method needs for the same scramble, and press Watch to race it.</li>
+      <li><strong>Stuck?</strong> 💡 Hint names the next step, ▶ Show me plays just that step, 🏁 Finish it solves the rest. Your timer keeps running and the result is marked "with help".</li>
+      <li><strong>Watch it solve:</strong> choose a method and press Solve. The timer runs while it turns and stops the moment it's solved.</li>
+    </ul>
+    <p class="muted">Notation: R = right face clockwise (as you look at it), R' = anticlockwise, R2 = half turn.</p>
+    <p class="muted">Trix's look is inspired by Google's 2014 Rubik's Cube doodle. All code here is original; the shortest solver uses cubejs (MIT licence).</p>
+    <form method="dialog"><button class="btn primary">Got it</button></form>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
