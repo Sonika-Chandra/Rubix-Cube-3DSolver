@@ -2,6 +2,9 @@
 
 Trix is a 3D Rubik's cube in the browser that you can turn by hand, and that can solve itself three different ways while a timer runs.
 
+<img width="1267" height="635" alt="image" src="https://github.com/user-attachments/assets/bc7287d5-2824-4e5b-beea-3b749da13d84" />
+
+
 - **Play:** drag stickers to turn layers, middle layers included (the layer follows your finger, then snaps). Shift+drag turns the whole cube, and dragging the background looks around. Keyboard: U R F D L B, M E S for middle slices (Shift = anticlockwise), X Y Z, Ctrl+Z.
 - **Colours:** switch between Classic and Pastel stickers (remembered in your browser).
 - **Race it:** press Scramble. Your timer starts on your first turn and stops when the cube is solved. Then **compare**: Trix shows how many moves each method needs for *your* scramble, and **Watch** replays your scramble so you can race each method on equal terms.
