@@ -1,4 +1,4 @@
-# Trix
+# Trix(WORK IN PROGRESS)
 
 Trix is a 3D Rubik's cube in the browser that you can turn by hand, and that can solve itself three different ways while a timer runs.
 
