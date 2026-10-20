@@ -62,3 +62,4 @@ See **GUIDE.md** for how each part works.
 - Trix's look and feel is inspired by Google's 2014 Rubik's Cube doodle (playable at [elgooG](https://elgoog.im/rubiks-cube/)). No code or assets were copied; everything here is written from scratch.
 - [cubejs](https://github.com/ldez/cubejs) by Ludovic Fernandez et al. (MIT), an implementation of Herbert Kociemba's two-phase algorithm, powers the Shortest solver.
 - [three.js](https://threejs.org) (MIT) draws the 3D cube.
+- Built by Sonika Chandra with help from Claude (Anthropic) for code and explanations.
